@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-
+import { Alert } from "react-native";
 import { ListItem, Avatar } from "react-native-elements";
 import { firestore } from "../firebase-services";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const CustomListItem = ({ id, chatName, enterChat }) => {
 	const [chatMessages, setChatMessages] = useState([]);
-
 	useEffect(() => {
 		const unsubscribe = firestore
 			.collection("chats")
@@ -18,7 +17,7 @@ const CustomListItem = ({ id, chatName, enterChat }) => {
 			);
 
 		return unsubscribe;
-	});
+	}, []);
 
 	return (
 		<ListItem onPress={() => enterChat(id, chatName)} key={id} bottomDivider>
@@ -37,9 +36,15 @@ const CustomListItem = ({ id, chatName, enterChat }) => {
 					{chatMessages?.[0]?.message}
 				</ListItem.Subtitle>
 			</ListItem.Content>
+			<Icon
+				onPress={() => {
+					Alert.alert("Chat Room ID", id);
+				}}
+				size={25}
+				name="share-square-o"
+			/>
 		</ListItem>
 	);
 };
 
 export default CustomListItem;
-const styles = StyleSheet.create({});

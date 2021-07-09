@@ -7,14 +7,20 @@ import {
 	View,
 	SafeAreaView,
 	ScrollView,
+	Modal,
 } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+
 import CustomListItem from "../components/CustomListItem";
 import { AntDesign, SimpleLineIcons } from "@expo/vector-icons";
-import { Avatar } from "react-native-elements";
-import { firestore, auth } from "../firebase-services";
+import { Avatar, Button, Input } from "react-native-elements";
+import { firestore, auth, firebase } from "../firebase-services";
 
 const HomeScreen = ({ navigation }) => {
 	const [chats, setChats] = useState([]);
+	const [chatRoomId, setChatRoomId] = useState("");
+	const [isJoining, setIsJoining] = useState(false);
+	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const handleSignOutUser = async () => {
 		try {
@@ -24,10 +30,29 @@ const HomeScreen = ({ navigation }) => {
 		}
 	};
 
+	const handleJoinRoom = async () => {
+		try {
+			setIsJoining(true);
+			await firestore
+				.collection("chats")
+				.doc(chatRoomId)
+				.update({
+					participants: firebase.firestore.FieldValue.arrayUnion(
+						auth.currentUser.uid
+					),
+				});
+			setIsModalVisible(false);
+		} catch (error) {
+			alert(error);
+		} finally {
+			setIsJoining(false);
+		}
+	};
+
 	useEffect(() => {
 		const unsubscribe = firestore
 			.collection("chats")
-			.orderBy("chatName")
+			.where("participants", "array-contains", auth.currentUser.uid)
 			.onSnapshot((snapshot) => {
 				setChats(
 					snapshot.docs.map((doc) => ({
@@ -84,6 +109,7 @@ const HomeScreen = ({ navigation }) => {
 	return (
 		<SafeAreaView style={styles.container}>
 			<StatusBar style="dark" />
+			<Button onPress={() => setIsModalVisible(true)} title="Join Chat" />
 			<ScrollView>
 				{chats.map(({ id, data: { chatName } }) => (
 					<CustomListItem
@@ -94,6 +120,60 @@ const HomeScreen = ({ navigation }) => {
 					/>
 				))}
 			</ScrollView>
+			<Modal
+				transparent={true}
+				visible={isModalVisible}
+				onDismiss={() => setIsModalVisible(false)}
+			>
+				<View
+					style={{
+						flex: 1,
+						alignItems: "center",
+						justifyContent: "center",
+						backgroundColor: "rgba(0,0,0,0.7)",
+					}}
+				>
+					<View
+						style={{
+							backgroundColor: "white",
+							borderRadius: 8,
+							width: "80%",
+							height: 200,
+							padding: 10,
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						<Icon
+							name="close"
+							style={{ position: "absolute", top: 10, right: 10 }}
+							size={20}
+							onPress={() => {
+								setChatRoomId("");
+								setIsModalVisible(false);
+							}}
+						/>
+						<Text
+							style={{ marginBottom: 40, fontSize: 20, fontWeight: "bold" }}
+						>
+							Chat Room
+						</Text>
+						<Input
+							placeholder="Enter Chat Room ID"
+							value={chatRoomId}
+							onChangeText={setChatRoomId}
+							onSubmitEditing={handleJoinRoom}
+							style={{ textAlign: "center" }}
+						/>
+						<Button
+							disabled={!chatRoomId}
+							onPress={handleJoinRoom}
+							title="Join Chat Room"
+							loading={isJoining}
+						/>
+					</View>
+				</View>
+			</Modal>
 		</SafeAreaView>
 	);
 };

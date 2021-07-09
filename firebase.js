@@ -3,13 +3,13 @@ import firebase from "firebase/app";
 // import "firebase/auth";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyB4xNw4jCZA0LozIjS2hiphnrpvOFYUiHQ",
-	authDomain: "chatsapp-efc0c.firebaseapp.com",
-	projectId: "chatsapp-efc0c",
-	storageBucket: "chatsapp-efc0c.appspot.com",
-	messagingSenderId: "360077156699",
-	appId: "1:360077156699:web:c83dc58a1fe3cc902afa7e",
-	measurementId: "G-EQG4K637GE",
+	apiKey: "AIzaSyA5yIxeCT1qUIVmFPaj7Ruqk13Kf62XLHU",
+	authDomain: "chatapp2-961bd.firebaseapp.com",
+	projectId: "chatapp2-961bd",
+	storageBucket: "chatapp2-961bd.appspot.com",
+	messagingSenderId: "1038332875914",
+	appId: "1:1038332875914:web:3174f53a7f1cb877dc4973",
+	measurementId: "G-2MHJ6N1D25",
 };
 
 firebase.initializeApp(firebaseConfig);

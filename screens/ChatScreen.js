@@ -5,7 +5,6 @@ import {
 	View,
 	TouchableOpacity,
 	SafeAreaView,
-	KeyboardAvoidingView,
 	ScrollView,
 	TextInput,
 	Keyboard,
@@ -15,6 +14,7 @@ import { Avatar } from "react-native-elements";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { auth, firestore } from "../firebase-services";
+import moment from "moment";
 
 const ChatScreen = ({ navigation, route }) => {
 	const [input, setInput] = useState("");
@@ -65,7 +65,7 @@ const ChatScreen = ({ navigation, route }) => {
 				</View>
 			),
 		});
-	}, [navigation, messages]);
+	}, [navigation]);
 
 	const handleSendMessage = () => {
 		Keyboard.dismiss();
@@ -128,6 +128,14 @@ const ChatScreen = ({ navigation, route }) => {
 										position="absolute"
 									/>
 									<Text style={styles.myMessageText}>{data.message}</Text>
+									<Text
+										style={[
+											styles.recievedMessageName,
+											{ color: "white", marginTop: 10 },
+										]}
+									>
+										{moment(data.timestamp).format("ddd HH:mm")}
+									</Text>
 								</View>
 							) : (
 								<View key={id} style={styles.recievedMessage}>
@@ -146,7 +154,7 @@ const ChatScreen = ({ navigation, route }) => {
 									</Text>
 
 									<Text style={styles.recievedMessageName}>
-										{data.timestamp.toDate().toString()}
+										{moment(data.timestamp).format("ddd HH:mm")}
 									</Text>
 								</View>
 							)

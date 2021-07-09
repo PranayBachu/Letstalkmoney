@@ -1,25 +1,47 @@
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View, KeyboardAvoidingView } from "react-native";
-import { Button, Input, Text, Image } from "react-native-elements";
-import { auth } from "../firebase-services";
+import { StyleSheet, View, ScrollView } from "react-native";
+import { Button, Input, Text } from "react-native-elements";
+import { auth, firebase } from "../firebase-services";
 
 const SettingsScreen = ({ navigation }) => {
-	const [name, setName] = useState("");
-	//   const [email, setEmail] = useState("");
-	//   const [password, setPassword] = useState("");
-	const [imageUrl, setImageUrl] = useState("");
+	const [name, setName] = useState(auth.currentUser.displayName);
+	const [email, setEmail] = useState(auth.currentUser.email);
+	const [password, setPassword] = useState("");
+	const [isUpdating, setIsUpdating] = useState(false);
 
-	const updateUserProfile = () => {
-		auth.currentUser.updateProfile({
-			displayName: name,
-			//   photoURL:
-			//     imageUrl ||
-			//     "https://cencup.com/wp-content/uploads/2019/07/avatar-placeholder.png",
-		});
+	const updateUserProfile = async () => {
+		try {
+			setIsUpdating(true);
+			await auth.currentUser.updateProfile({
+				displayName: name,
+			});
+			setIsUpdating(false);
+			navigation.goBack();
+		} catch (error) {
+			alert(error);
+			setIsUpdating(false);
+		}
 	};
+
+	const upgradeFromAnonymous = async () => {
+		try {
+			setIsUpdating(true);
+			const cred = firebase.auth.EmailAuthProvider.credential(email, password);
+			const { user } = await auth.currentUser.linkWithCredential(cred);
+			await user.updateProfile({
+				displayName: name,
+			});
+			setIsUpdating(false);
+			navigation.goBack();
+		} catch (error) {
+			alert(error);
+			setIsUpdating(false);
+		}
+	};
+
 	return (
-		<KeyboardAvoidingView behavior="padding" style={styles.container}>
+		<ScrollView behavior="padding" contentContainerStyle={styles.container}>
 			<StatusBar style="light" />
 			<Text h1 style={{ marginBottom: 50 }}>
 				Update Your Profile
@@ -32,19 +54,23 @@ const SettingsScreen = ({ navigation }) => {
 					value={name}
 					onChangeText={(text) => setName(text)}
 				/>
-				{/* <Input
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-        />
-        <Input
-          placeholder="Password"
-          type="password"
-          secureTextEntry
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-        /> */}
+				{auth.currentUser.isAnonymous && (
+					<>
+						<Input
+							placeholder="Email"
+							type="email"
+							value={email}
+							onChangeText={(text) => setEmail(text)}
+						/>
+						<Input
+							placeholder="Password"
+							type="password"
+							secureTextEntry
+							value={password}
+							onChangeText={(text) => setPassword(text)}
+						/>
+					</>
+				)}
 				{/* <Input
           placeholder="Profile Picture URL (optional)"
           type="text"
@@ -54,13 +80,18 @@ const SettingsScreen = ({ navigation }) => {
         /> */}
 			</View>
 			<Button
-				raised
+				//raised
 				title="Update"
 				containerStyle={styles.button}
-				onPress={updateUserProfile}
+				onPress={
+					auth.currentUser.isAnonymous
+						? upgradeFromAnonymous
+						: updateUserProfile
+				}
+				loading={isUpdating}
 			/>
 			<View style={{ height: 100 }} />
-		</KeyboardAvoidingView>
+		</ScrollView>
 	);
 };
 

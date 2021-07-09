@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Input } from "react-native-elements";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { firestore } from "../firebase-services";
+import { auth, firestore } from "../firebase-services";
 
 const AddChatScreen = ({ navigation }) => {
 	const [input, setInput] = useState("");
@@ -26,6 +26,7 @@ const AddChatScreen = ({ navigation }) => {
 				.collection("chats")
 				.add({
 					chatName: input,
+					participants: [auth.currentUser.uid],
 				})
 				.then(() => {
 					navigation.goBack();

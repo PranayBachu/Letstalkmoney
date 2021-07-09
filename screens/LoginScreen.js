@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View, ScrollView, Dimensions } from "react-native";
 import { Button, Input, Image } from "react-native-elements";
 import { auth } from "../firebase-services";
+import {
+	AdMobBanner,
+	AdMobInterstitial,
+	AdMobRewarded,
+	setTestDeviceIDAsync,
+} from "expo-ads-admob";
 
 const logo = require("../assets/chatsapplogo.png");
 const { height } = Dimensions.get("window");
@@ -18,8 +24,7 @@ const LoginScreen = ({ navigation }) => {
 			setIsLoginLoading(true);
 			await auth.signInWithEmailAndPassword(email, password);
 		} catch (error) {
-			console.log(error);
-		} finally {
+			alert(error);
 			setIsLoginLoading(false);
 		}
 	};
@@ -29,11 +34,48 @@ const LoginScreen = ({ navigation }) => {
 			setIsAnonymousLoginLoading(true);
 			await auth.signInAnonymously();
 		} catch (error) {
-			console.log(error);
-		} finally {
+			alert(error);
 			setIsAnonymousLoginLoading(false);
 		}
 	};
+
+	const setTestDeviceId = async () => {
+		try {
+			await setTestDeviceIDAsync("EMULATOR");
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const interstatial = async () => {
+		try {
+			await AdMobInterstitial.setAdUnitID(
+				"ca-app-pub-3940256099942544/1033173712"
+			); // Test ID, Replace with your-admob-unit-id
+			await AdMobInterstitial.requestAdAsync({ servePersonalizedAds: true });
+			await AdMobInterstitial.showAdAsync();
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	const reward = async () => {
+		try {
+			await AdMobRewarded.setAdUnitID("ca-app-pub-3940256099942544/5224354917"); // Test ID, Replace with your-admob-unit-id
+			await AdMobRewarded.requestAdAsync();
+			await AdMobRewarded.showAdAsync();
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	useEffect(() => {
+		setTestDeviceId();
+		AdMobRewarded.addEventListener("rewardedVideoUserDidEarnReward", () => {
+			alert("Ad Rewareded");
+		});
+
+		return () => AdMobRewarded.removeAllListeners();
+	}, []);
 
 	return (
 		<ScrollView contentContainerStyle={styles.container}>
@@ -76,7 +118,24 @@ const LoginScreen = ({ navigation }) => {
 				title="Sign Up"
 				type="outline"
 			/>
-			<View style={{ height: 100 }} />
+			<View style={{ justifyContent: "flex-end", marginTop: 20 }}>
+				<AdMobBanner
+					bannerSize="banner"
+					adUnitID="ca-app-pub-3940256099942544/6300978111" // Test ID, Replace with your-admob-unit-id
+					servePersonalizedAds // true or false
+					//onDidFailToReceiveAdWithError={this.bannerError}
+				/>
+				<Button
+					buttonStyle={{ marginTop: 10 }}
+					title="Interstatial Ad"
+					onPress={interstatial}
+				/>
+				<Button
+					buttonStyle={{ marginTop: 10 }}
+					title="Rewarded Ad"
+					onPress={reward}
+				/>
+			</View>
 		</ScrollView>
 	);
 };
