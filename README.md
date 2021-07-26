@@ -3,9 +3,7 @@
 ### Dependenciies used :
 expo(react-native)
 firebase
-facebook developer acccount for social medai login
 ### Initializing expo project
-npm run:ios
 npm run:android
 ### Video links to the Android and IOS applications
 Below is the youtube link to ut
